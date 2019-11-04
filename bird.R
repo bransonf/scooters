@@ -1,28 +1,30 @@
 # Bird Scooters
 
-bird_auth <- function(email, guid){
-  POST(url = 'https://api.birdapp.com/user/login',
+bird_email <- function(email){
+  POST(url = 'https://api-auth.prod.birdapp.com/api/v1/auth/email',
        body = list(email = email),
-       encode = "json",
+       encode = 'json',
        user_agent('Bird/4.41.0 (co.bird.Ride; build:37; iOS 12.3.1) Alamofire/4.41.0'),
        content_type_json(),
        add_headers(
-         `Device-Id` = guid,
+         `Device-Id` = uuid::UUIDgenerate(),
          Platform = 'ios',
          `App-Version` = '4.41.0'
        )
+  )
+}
+
+bird_auth <- function(token){
+  POST(url = 'https://api-auth.prod.birdapp.com/api/v1/auth/magic-link/use',
+       body = list(token = token),
+       encode = 'json',
+       content_type_json()
        ) -> p
   
-  # parse content into list
-  cnt <- content(p)
-  
-  auth = list(
-    id = cnt$id,
-    token = cnt$token
-  )
-  
-  return(auth)
+  return(p)
 }
+ 
+
 
 bird_scooters <- function(guid, token, lat, lon, radius){
   GET('https://api.birdapp.com/bird/nearby?',
